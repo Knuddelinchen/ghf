@@ -1,0 +1,6 @@
+heroku login
+heroku create deine-app-name
+git push heroku master
+heroku open
+
+python Sachentesten in python.py

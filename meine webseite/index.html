@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask-Webseite</title>
+</head>
+<body>
+    <h1>Willkommen auf meiner Webseite</h1>
+    <p>Du kannst hier Vocabeln lernen oder der Webseite beibringen</p>
+    <p>Beschwerden bitte en Fussilila690@gmail.com senden</p>
+    <!DOCTYPE html>
+    <html lang="de">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Vokabeltrainer</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 50px;
+                padding: 20px;
+                background-color: #f4f4f4;
+            }
+            input, button {
+                padding: 10px;
+                margin: 10px 0;
+                font-size: 16px;
+            }
+            .result, .quiz, .message {
+                margin-top: 20px;
+                font-weight: bold;
+            }
+        </style>
+    </head>
+    <body>
+    
+        <h1>Vokabeltrainer: Deutsch nach Englisch</h1>
+    
+        <div>
+            <label for="newWord">Neues deutsches Wort hinzufügen:</label>
+            <input type="text" id="newWord" placeholder="Deutsches Wort eingeben">
+            <button onclick="addVocabulary()">Hinzufügen</button>
+        </div>
+    
+        <div>
+            <button onclick="startQuiz()">Vokabeln abfragen</button>
+        </div>
+    
+        <div class="message" id="message"></div>
+        <div class="quiz" id="quiz"></div>
+        <div class="result" id="result"></div>
+    
+        <script>
+            // Vokabelliste aus dem LocalStorage laden oder leere Liste initialisieren
+            let vocabularyList = JSON.parse(localStorage.getItem('vocabularyList')) || [];
+            let totalRounds = 0;
+            let currentWord = '';
+            let correctTranslation = '';
+    
+            // Funktion zur Übersetzung von Deutsch nach Englisch mit API
+            async function translateToEnglish(word) {
+                try {
+                    const response = await fetch(`https://api.mymemory.translated.net/get?q=${word}&langpair=de|en`);
+                    const data = await response.json();
+                    return data.responseData.translatedText;
+                } catch (error) {
+                    console.error("Fehler bei der Übersetzung:", error);
+                    return "Übersetzung fehlgeschlagen";
+                }
+            }
+    
+            // Funktion zum Hinzufügen neuer Vokabeln
+            function addVocabulary() {
+                const newWord = document.getElementById('newWord').value.trim();
+                if (newWord) {
+                    // Überprüfen, ob das Wort bereits existiert
+                    if (!vocabularyList.includes(newWord)) {
+                        vocabularyList.push(newWord);
+                        totalRounds++;
+    
+                        // Vokabelliste in LocalStorage speichern
+                        localStorage.setItem('vocabularyList', JSON.stringify(vocabularyList));
+                        
+                        document.getElementById('message').innerHTML = `Wort "${newWord}" wurde hinzugefügt!`;
+                        document.getElementById('newWord').value = '';
+                    } else {
+                        document.getElementById('message').innerHTML = `Das Wort "${newWord}" ist bereits in der Liste.`;
+                    }
+                } else {
+                    document.getElementById('message').innerHTML = "Bitte ein gültiges Wort eingeben!";
+                }
+            }
+    
+            // Funktion zum Starten der Vokabelabfrage
+            async function startQuiz() {
+                if (vocabularyList.length === 0) {
+                    document.getElementById('message').innerHTML = "Die Vokabelliste ist leer.";
+                    return;
+                }
+                
+                const randomIndex = Math.floor(Math.random() * vocabularyList.length);
+                currentWord = vocabularyList[randomIndex];
+                correctTranslation = await translateToEnglish(currentWord);
+                
+                document.getElementById('quiz').innerHTML = `
+                    Übersetze ins Englische: <strong>${currentWord}</strong><br>
+                    <input type="text" id="userAnswer" placeholder="Englische Übersetzung">
+                    <button onclick="checkAnswer()">Überprüfen</button>
+                `;
+                document.getElementById('result').innerHTML = '';
+            }
+    
+            // Funktion zur Überprüfung der Antwort
+            function checkAnswer() {
+                const userAnswer = document.getElementById('userAnswer').value.trim().toLowerCase();
+                if (userAnswer === correctTranslation.toLowerCase()) {
+                    document.getElementById('result').innerHTML = "Gut gemacht! Die Übersetzung ist korrekt.";
+                } else {
+                    document.getElementById('result').innerHTML = `Falsch! Die richtige Antwort ist: ${correctTranslation}`;
+                }
+            }
+    
+        </script>
+    
+    </body>
+    </html>
+    
+    
+
+</body>
+</html>
